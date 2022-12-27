@@ -14,6 +14,7 @@ public class DroneController : MonoBehaviour
     private Rigidbody rb_core;
     private float minMaxPitch = 5;
     private float minMaxRoll = 5;
+    private float maxVelocity = 4;
     private float pitchComputed;
     private float rollComputed;
     private float yawComputed;
@@ -90,28 +91,10 @@ public class DroneController : MonoBehaviour
         float z = 0f;
         float r = 0f;
 
-        if(xAxis < rb_core.position.x){
-            if(rb_core.position.x - xAxis < 1){
-                x = StabilizeX();
-            }else{
-                x = -1 * ((rb_core.position.x - xAxis ) / xDistanceFromStart);
-            }
+        //AXE X
+        x = StabilizeX(xAxis);
 
-            if(!debug){
-                print("xDistanceFromStart = "+xDistanceFromStart+" ; xAxis = "+xAxis+" ; rb_core.position.x = "+rb_core.position.x+ "; calcul = "+x);
-            }
-
-        }
-        else if(xAxis > rb_core.position.x){
-            if(xAxis - rb_core.position.x < 1){
-                x = StabilizeX();
-            }else{
-                x = 1 * ((xAxis - rb_core.position.x) / xDistanceFromStart);
-            }
-        }
-        
-
-
+        //AXE Y
         if(zAxis < rb_core.position.z){
             if(rb_core.position.z - zAxis < 1){
                 z = StabilizeZ();
@@ -127,17 +110,28 @@ public class DroneController : MonoBehaviour
             }
         }
         
-
-        if(!debug){
-            print("X Z R"+x+" "+z+" "+r);
-            debug =true;
-        }
         SideMotions(x, z, r);
     }
 
-    public float StabilizeX()
+    public float StabilizeX(float xAxis)
     {
-        return -rb_core.velocity.x * 3;
+        //If velocity too fast
+        if(rb_core.velocity.x > maxVelocity){
+            return -rb_core.velocity.x / 2.5f;
+        }
+        //Target in negative direction
+        if(xAxis < rb_core.position.x){            
+            if(rb_core.position.x - xAxis < 1){
+                return -rb_core.velocity.x * 3;
+            }else{
+                return -1 * ((rb_core.position.x - xAxis) / xDistanceFromStart);
+            }
+        }
+        //Target in positive direction
+        if(xAxis - rb_core.position.x < 1){
+            return -rb_core.velocity.x * 3;
+        }
+        return -1 * ((rb_core.position.x - xAxis) / xDistanceFromStart);
     }
 
     public float StabilizeZ()
