@@ -15,6 +15,7 @@ public class DroneController : MonoBehaviour
     private float minMaxPitch = 5;
     private float minMaxRoll = 5;
     private float maxVelocity = 4;
+    private float stabilizeQuotient = 2;
     private float pitchComputed;
     private float rollComputed;
     private float yawComputed;
@@ -55,7 +56,7 @@ public class DroneController : MonoBehaviour
         }
         HandleRotors();
 
-        //Action aftre setup
+        //Action after setup
         if(liftCompleted){
             //SideMotions(0, 1, 0);
             AssignObjective(0,0);
@@ -95,20 +96,7 @@ public class DroneController : MonoBehaviour
         x = StabilizeX(xAxis);
 
         //AXE Y
-        if(zAxis < rb_core.position.z){
-            if(rb_core.position.z - zAxis < 1){
-                z = StabilizeZ();
-            }else{
-                z = -1 * ((rb_core.position.z - zAxis ) / zDistanceFromStart);
-            }
-        }
-        else if(zAxis > rb_core.position.z){
-            if(zAxis - rb_core.position.z < 1){
-                z = StabilizeZ();
-            }else{
-                z = 1 * ((zAxis - rb_core.position.z) / zDistanceFromStart);
-            }
-        }
+        z = StabilizeZ(zAxis);
         
         SideMotions(x, z, r);
     }
@@ -116,13 +104,13 @@ public class DroneController : MonoBehaviour
     public float StabilizeX(float xAxis)
     {
         //If velocity too fast
-        if(rb_core.velocity.x > maxVelocity){
-            return -rb_core.velocity.x / 2.5f;
+        if(rb_core.velocity.x <= (-maxVelocity) || rb_core.velocity.x >= (maxVelocity)){
+            return -rb_core.velocity.x;
         }
         //Target in negative direction
         if(xAxis < rb_core.position.x){            
             if(rb_core.position.x - xAxis < 1){
-                return -rb_core.velocity.x * 3;
+                return -rb_core.velocity.x * maxVelocity;
             }else{
                 return -1 * ((rb_core.position.x - xAxis) / xDistanceFromStart);
             }
@@ -134,9 +122,25 @@ public class DroneController : MonoBehaviour
         return -1 * ((rb_core.position.x - xAxis) / xDistanceFromStart);
     }
 
-    public float StabilizeZ()
+    public float StabilizeZ(float zAxis)
     {
-        return -rb_core.velocity.z * 3;
+        //If velocity too fast
+        if(rb_core.velocity.z <= (-maxVelocity) || rb_core.velocity.z >= (maxVelocity)){
+            return -rb_core.velocity.z / 2.5f;
+        }
+        //Target in negative direction
+        if(zAxis < rb_core.position.z){            
+            if(rb_core.position.z - zAxis < 1){
+                return -rb_core.velocity.z * maxVelocity;
+            }else{
+                return -1 * ((rb_core.position.z - zAxis) / zDistanceFromStart);
+            }
+        }
+        //Target in positive direction
+        if(zAxis - rb_core.position.z < 1){
+            return -rb_core.velocity.z * 4;
+        }
+        return -1 * ((rb_core.position.z - zAxis) / zDistanceFromStart);
     }
 
     public void AssignObjective(float x, float z)
