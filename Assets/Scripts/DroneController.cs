@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Scripts.Rotor;
+using Scripts.Action;
 
 public class DroneController : MonoBehaviour
 {
@@ -26,9 +27,14 @@ public class DroneController : MonoBehaviour
     Vector3 moving = new Vector3(0f, 0f, 0f);
 
     //Other variables
+    private Action action;
     private bool liftCompleted;
     private float xDistanceFromStart;
     private float zDistanceFromStart;
+    private float yTarget;
+    private List<GameObject> obstacleList;
+    private float obstacleFactor;
+    private float obstacleSafeDistance;
 
 
     //Debug
@@ -37,10 +43,14 @@ public class DroneController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        yTarget = -1;
         liftCompleted = false;
         rb_core = core.GetComponent<Rigidbody>();
         rb_drone = GetComponent<Rigidbody>();
+        obstacleList = new List<GameObject>();
         _rotors = GetComponentsInChildren<IRotor>().ToList();
+        obstacleFactor = 10;
+        obstacleSafeDistance = 10;
     }
 
     void Update()
@@ -57,12 +67,20 @@ public class DroneController : MonoBehaviour
         {
             return;
         }
-        HandleRotors();
+        HandleRotors(yTarget);
 
         //Action after setup
         if(liftCompleted){
-            AssignObjective(0,0);
-            GoToAndStabilize(0, 0);
+            //Action
+            GoToTargetedHeight(1);
+            // AssignObjective(0,0);
+            // action.Execute();
+
+            //Use smar area
+            AvoidObstacles();
+
+            //Clear smart area
+            obstacleList.Clear();
         }
     }
 
@@ -71,6 +89,7 @@ public class DroneController : MonoBehaviour
         //Smart detection area
         if(other.gameObject.CompareTag("Obstacle")){
             print("Obstacle detected nearby");
+            obstacleList.Add(other.gameObject);
         }
         if(other.gameObject.CompareTag("Drone")){
             print("Drone detected nearby");
@@ -83,11 +102,11 @@ public class DroneController : MonoBehaviour
         rb_drone.position = pos;
     }
 
-    public void HandleRotors()
+    public void HandleRotors(float yTarget = -1)
     {
         foreach (IRotor rotor in _rotors)
         {
-            rotor.UpdateRotor(rb_core);
+            rotor.UpdateRotor(rb_core, yTarget);
         }
     }
 
@@ -118,6 +137,11 @@ public class DroneController : MonoBehaviour
         z = StabilizeZ(zAxis);
         
         SideMotions(x, z, r);
+    }
+
+    public void GoToTargetedHeight(float target)
+    {
+        yTarget = target;
     }
 
     public float StabilizeX(float xAxis)
@@ -175,6 +199,39 @@ public class DroneController : MonoBehaviour
             zDistanceFromStart = rb_core.position.z - z;
         }else{
             zDistanceFromStart = z - rb_core.position.z;
+        }
+
+        action = new Action(this, 0,0);
+    }
+
+    public void AvoidObstacles()
+    {
+        if (obstacleList.Count > 0)
+        {
+            Vector3 accelerationSum = Vector3.zero;
+            foreach (GameObject obstacle in obstacleList)
+            {
+                Vector3 collisionPoint = obstacle.GetComponent<Collider>().ClosestPointOnBounds(transform.position);
+
+/*
+                float goingAbove = obstacle.GetComponent<Collider>().bounds.size.y / 2;
+                
+                if(collisionPoint.y > goingAbove // and goingAbove shorter than the other directions//){
+                    //Pause and go upwards
+                }else if(/*direction vers la droite et veux monter sur y// transform.position){
+
+                }
+*/
+                float distance = Vector3.Distance(transform.position, collisionPoint);
+                print(distance);
+                //FIND PATH
+
+
+
+                float factor = obstacleFactor / ((distance - obstacleSafeDistance + 1) * (distance - obstacleSafeDistance + 1));
+                accelerationSum += Vector3.Normalize(transform.position - collisionPoint) * factor;
+            }
+            rb_core.AddForce(accelerationSum);
         }
     }
 

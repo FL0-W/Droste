@@ -15,9 +15,14 @@ public class RotorController : MonoBehaviour, IRotor
 
     private Rigidbody rb;
 
-    public void UpdateRotor(Rigidbody rbody)
+    public void UpdateRotor(Rigidbody rbody, float yTarget)
     {
         rb = rbody;
+
+        //Check if target is specified
+        SetTarget(yTarget);
+
+        //Apply force
         Vector3 upVector = transform.up;
         upVector.x = 0;
         upVector.z = 0;
@@ -27,7 +32,15 @@ public class RotorController : MonoBehaviour, IRotor
         UpdateThrottle();
         Vector3 engineForce = Vector3.zero;
         engineForce = transform.up * ((rb.mass*Physics.gravity.magnitude + finalDiff ) + (throttle * maxPower))/4;
-        rb.AddForce(engineForce,ForceMode.Force);
+    UpdateOrStabilizeY(engineForce);    
+    }
+
+    public void SetTarget(float yTarget)
+    {
+        if(yTarget > -1){
+            minLimitUp = yTarget;
+            maxLimitUp = yTarget+1;
+        }
     }
 
     public void DecreaseThrottle()
@@ -38,6 +51,20 @@ public class RotorController : MonoBehaviour, IRotor
     public void IncreaseThrottle()
     {
         throttle = (1f * ((minLimitUp - rb.position.y)) / minLimitUp) / maxPower;
+    }
+
+    public void UpdateOrStabilizeY(Vector3 engineForce)
+    {
+        if(rb.velocity.y > 1){
+            /*Vector3*/ engineForce = -rb.velocity;
+
+            rb.AddForce(engineForce,ForceMode.Force);
+        }
+        else if(rb.velocity.y < -0.5){
+            print("DOWN : "+engineForce);
+            rb.AddForce(engineForce,ForceMode.Force);
+        }
+        rb.AddForce(engineForce,ForceMode.Force);
     }
 
     public void UpdateThrottle()
