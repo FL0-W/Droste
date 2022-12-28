@@ -12,6 +12,7 @@ public class DroneController : MonoBehaviour
 
     //Drone physics
     private Rigidbody rb_core;
+    private Rigidbody rb_drone;
     private float minMaxPitch = 5;
     private float minMaxRoll = 5;
     private float maxVelocity = 4;
@@ -38,11 +39,13 @@ public class DroneController : MonoBehaviour
     {
         liftCompleted = false;
         rb_core = core.GetComponent<Rigidbody>();
+        rb_drone = GetComponent<Rigidbody>();
         _rotors = GetComponentsInChildren<IRotor>().ToList();
     }
 
     void Update()
     {
+        UpdatePositionDrone();
         if(!liftCompleted && rb_core.position.y >= 10){
             liftCompleted = true;
         }
@@ -58,10 +61,26 @@ public class DroneController : MonoBehaviour
 
         //Action after setup
         if(liftCompleted){
-            //SideMotions(0, 1, 0);
             AssignObjective(0,0);
             GoToAndStabilize(0, 0);
         }
+    }
+
+    void OnTriggerStay(Collider other)
+    {
+        //Smart detection area
+        if(other.gameObject.CompareTag("Obstacle")){
+            print("Obstacle detected nearby");
+        }
+        if(other.gameObject.CompareTag("Drone")){
+            print("Drone detected nearby");
+        }
+    }
+
+    public void UpdatePositionDrone()
+    {
+        Vector3 pos = new Vector3(rb_core.position.x, rb_core.position.y-1, rb_core.position.z);
+        rb_drone.position = pos;
     }
 
     public void HandleRotors()

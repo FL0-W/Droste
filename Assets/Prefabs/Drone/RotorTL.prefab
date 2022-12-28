@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 7220493429594136229}
   - component: {fileID: 7220493429594136228}
   - component: {fileID: 2320001285575910657}
+  - component: {fileID: 1697336681377334119}
+  - component: {fileID: -2907582839092627335}
   m_Layer: 0
   m_Name: RotorTL
   m_TagString: Untagged
@@ -127,5 +129,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d8e64543d22016046964f98b247b0b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!65 &1697336681377334119
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7220493429594136226}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.0000001, y: 2, z: 1.0000002}
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &-2907582839092627335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7220493429594136226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e34ad78c8664c6d4f83174e23388ef8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
