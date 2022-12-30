@@ -9,28 +9,51 @@ namespace Scripts.Action
         private float xLocation;
         private float yLocation;
         private float zLocation;
+        private float packageHeight;
+        private bool landing;
 
         private bool finished;
 
 
-        public Action(DroneController drone, ActionType type, float xLocation, float yLocation, float zLocation)
+        public Action(DroneController drone, ActionType type, float xLocation, float yLocation, float zLocation, float packageHeight = 0.5f)
         {
             this.drone = drone;
-            this.xLocation = xLocation;
-            this.yLocation = yLocation;
-            this.zLocation = zLocation;
-            this.finished = false;
             this.type = type;
+            if(type == ActionType.GOBACKANDSHUTDOWN){
+                this.xLocation = drone.GetInitialX();
+                this.yLocation = drone.GetInitialY();
+                this.zLocation = drone.GetInitialZ();
+            }else{
+                this.xLocation = xLocation;
+                this.yLocation = yLocation;
+                this.zLocation = zLocation;
+            }
+            this.packageHeight = packageHeight;
+            this.landing = false;
+            this.finished = false;
+
         }
 
         public void Execute(){
-            if(type == ActionType.MOVINGTOLOCATION){
-                UpdateDistances();
-                drone.GoToAndStabilize(xLocation, zLocation);
+            switch (type)
+            {
+                case ActionType.MOVINGTOLOCATION:
+                    UpdateDistances();
+                    drone.GoToAndStabilize(xLocation, zLocation);
+                    break;
+                case ActionType.GOINGUPDOWN:
+                    drone.GoToTargetedHeight(yLocation);
+                    break;
+                case ActionType.GETTINGAPACKAGE:
+                    drone.GoDownAndGetPackage(yLocation, packageHeight);
+                    break;
+                case ActionType.GOBACKANDSHUTDOWN:
+                    drone.GoBackAndShutDown(landing);
+                    break;
+                default:
+                    break;
             }
-            else if(type == ActionType.GOINGUPDOWN){
-                drone.GoToTargetedHeight(yLocation);
-            }
+            
             UpdateStatus();
         }
 
@@ -61,16 +84,34 @@ namespace Scripts.Action
 
         public void UpdateStatus()
         {
-            if(type == ActionType.MOVINGTOLOCATION){
-                finished = (Mathf.Round(drone.GetDrone().position.x) == Mathf.Round(xLocation)
-                && Mathf.Round(drone.GetDrone().position.z) == Mathf.Round(zLocation)
-                && drone.GetDrone().velocity.x < 0.001f && drone.GetDrone().velocity.x > -0.001f
-                && drone.GetDrone().velocity.z < 0.001f && drone.GetDrone().velocity.z > -0.001f);
-            }
-            else if(type == ActionType.GOINGUPDOWN){
-                float margin = 3f;
-                finished = (drone.GetDrone().position.y < yLocation+margin && drone.GetDrone().position.y > yLocation
-                && drone.GetDrone().velocity.y < 0.1f && drone.GetDrone().velocity.y > -0.1f);
+            float margin = 3f;
+            switch (type)
+            {
+                case ActionType.MOVINGTOLOCATION:
+                    finished = (Mathf.Round(drone.GetDrone().position.x) == Mathf.Round(xLocation)
+                        && Mathf.Round(drone.GetDrone().position.z) == Mathf.Round(zLocation)
+                        && drone.GetDrone().velocity.x < 0.001f && drone.GetDrone().velocity.x > -0.001f
+                        && drone.GetDrone().velocity.z < 0.001f && drone.GetDrone().velocity.z > -0.001f);
+                    break;
+                case ActionType.GOINGUPDOWN:
+                    finished = (drone.GetDrone().position.y < yLocation+margin && drone.GetDrone().position.y > yLocation
+                        && drone.GetDrone().velocity.y < 0.1f && drone.GetDrone().velocity.y > -0.1f);
+                    break;
+                case ActionType.GETTINGAPACKAGE:
+                    finished = ( drone.IsCharged() &&
+                        drone.GetDrone().position.y < yLocation+margin && drone.GetDrone().position.y > yLocation
+                        && drone.GetDrone().velocity.y < 0.1f && drone.GetDrone().velocity.y > -0.1f);
+                    break;
+                case ActionType.GOBACKANDSHUTDOWN:
+                    landing = (Mathf.Round(drone.GetDrone().position.x) == Mathf.Round(xLocation)
+                        && Mathf.Round(drone.GetDrone().position.z) == Mathf.Round(zLocation)
+                        && drone.GetDrone().velocity.x < 0.001f && drone.GetDrone().velocity.x > -0.001f
+                        && drone.GetDrone().velocity.z < 0.001f && drone.GetDrone().velocity.z > -0.001f);
+
+                    finished = !drone.IsActive();
+                    break;
+                default:
+                    break;
             }
 
             if(finished){

@@ -15,6 +15,10 @@ public class DroneController : MonoBehaviour
     //Drone physics
     private Rigidbody rb_core;
     private Rigidbody rb_drone;
+    private bool isActive = false;
+    private float xStart;
+    private float yStart;
+    private float zStart;
     private float minMaxPitch = 5;
     private float minMaxRoll = 5;
     private float maxVelocity = 4;
@@ -24,7 +28,6 @@ public class DroneController : MonoBehaviour
     private float yawComputed;
     private float yaw;
     private float yawPower = 4;
-    private float powerRotor = 4;
     private float lerpSpeed = 1;
     Vector3 moving = new Vector3(0f, 0f, 0f);
 
@@ -41,7 +44,7 @@ public class DroneController : MonoBehaviour
 
 
     //Debug
-    public bool debug = false;
+    public bool debug = true;
 
     // Start is called before the first frame update
     void Start()
@@ -53,8 +56,15 @@ public class DroneController : MonoBehaviour
         rb_drone = GetComponent<Rigidbody>();
         obstacleList = new List<GameObject>();
         _rotors = GetComponentsInChildren<IRotor>().ToList();
+        xStart = rb_core.transform.position.x;
+        yStart = rb_core.transform.position.y;
+        zStart = rb_core.transform.position.z;
         obstacleFactor = 10;
         obstacleSafeDistance = 10;
+
+        if(debug){
+            PowerUp();
+        }
     }
 
     void Update()
@@ -67,7 +77,7 @@ public class DroneController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!rb_core)
+        if (!rb_core || !isActive)
         {
             return;
         }
@@ -77,11 +87,6 @@ public class DroneController : MonoBehaviour
         if(liftCompleted){
             //Action
             SimulateActions();
-            //GoToTargetedHeight(20);
-            //GoDownAndGetPackage(0.5f);
-            // GoToTargetedHeight(1);
-            // AssignObjective(0,0);
-            // currentAction.Execute();
 
             //Use smar area
             AvoidObstacles();
@@ -115,6 +120,40 @@ public class DroneController : MonoBehaviour
     }
 
 #region Physics
+
+    public bool IsActive()
+    {
+        return isActive;
+    }
+
+    public float GetInitialX()
+    {
+        return xStart;
+    }
+
+    public float GetInitialY()
+    {
+        return yStart;
+    }
+
+    public float GetInitialZ()
+    {
+        return zStart;
+    }
+
+    public void PowerUp()
+    {
+        Debug.Log(name+" powered up!");
+        isActive = true;
+    }
+
+    public void ShutDown()
+    {
+        Debug.Log(name+" shut down.");
+        isActive = false;
+        _actions.Clear();
+        rb_core.velocity = Vector3.zero;
+    }
 
     public void HandleRotors(float yTarget = -1, bool isCharged = false)
     {
@@ -189,6 +228,11 @@ public class DroneController : MonoBehaviour
         return -1 * ((rb_core.position.z - zAxis) / zDistanceFromStart);
     }
 
+    public bool IsCharged()
+    {
+        return hasTarget;
+    }
+
     public void AvoidObstacles()
     {
         if (obstacleList.Count > 0)
@@ -227,35 +271,30 @@ public class DroneController : MonoBehaviour
     private void SimulateActions(){
 
         if(currentAction == null){
+            Action action1 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, 0);
+            Action action2 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, -10);
+            Action action3 = new Action(this, ActionType.GOINGUPDOWN, 0, 20, 0);
+            Action action4 = new Action(this, ActionType.GOINGUPDOWN, 0, 10, 0);
+            Action action5 = new Action(this, ActionType.GETTINGAPACKAGE, -50, 15, -10, 0.5f);
+            Action action6 = new Action(this, ActionType.GOBACKANDSHUTDOWN, /*should not count :*/ -10000, -100000, -100000);
 
-        Action action1 = new Action(this, ActionType.MOVINGTOLOCATION, 0, 0, 0);
-        Action action2 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, -10);
-        Action action3 = new Action(this, ActionType.GOINGUPDOWN, 0, 20, 0);
-        Action action4 = new Action(this, ActionType.GOINGUPDOWN, 0, 10, 0);
+            //AddAction(action1);
+            AddAction(action6);
 
-        AddAction(action3);
-        AddAction(action1);
-        AddAction(action2);
-        AddAction(action4);
+            // AddAction(action5);
+            // AddAction(action3);
+            // AddAction(action2);
+            // AddAction(action4);
         }
 
         if(_actions.Count > 0 && (currentAction == null || currentAction.IsFinished()))
         {
-            // if(currentAction != null && currentAction.IsFinished())
-            // {
-            //     Debug.Log("STATUS ACTION :1="+_actions[0].IsFinished()+" ; 2="+_actions[1].IsFinished()+" ; 3="+_actions[2].IsFinished()+" ; 4="+_actions[3].IsFinished());
-            // }
             currentAction = _actions.FirstOrDefault(action => action.IsFinished() != true);
 
-            if(currentAction != null){
-                // Debug.Log("ACTION ======> Type: "+currentAction.GetType()+", finished: "+currentAction.IsFinished());
-            }else{
+            if(currentAction == null){
                 Debug.Log("ACTION FINISHED");
+                GoBackAndShutDown();
             }
-            // foreach(Action action in _actions)
-            // {
-            //     currentAction = action;
-            // }
         }
 
         if(currentAction != null){
@@ -275,23 +314,6 @@ public class DroneController : MonoBehaviour
         zDistanceFromStart = zDistance;
     }
 
-    // public void AssignObjective(float x, float z)
-    // {
-    //     //Assign distance on xAxis
-    //     if(rb_core.position.x > x){
-    //         xDistanceFromStart = rb_core.position.x - x;
-    //     }else{
-    //         xDistanceFromStart = x - rb_core.position.x;
-    //     }
-    //     //Assign distance on zAxis
-    //     if(rb_core.position.z > z){
-    //         zDistanceFromStart = rb_core.position.z - z;
-    //     }else{
-    //         zDistanceFromStart = z - rb_core.position.z;
-    //     }
-
-    //     currentAction = new Action(this, 0,0);
-    // }
     
     
     public void GoToTargetedHeight(float target)
@@ -315,14 +337,30 @@ public class DroneController : MonoBehaviour
     }
 
 
-    public void GoDownAndGetPackage(float packageHeight = 0.5f){
+    public void GoDownAndGetPackage(float goBackUpTo, float packageHeight = 0.5f){
         if(!core.GetComponent<CollisionBehavior>().IsCharged()){
             GoToTargetedHeight(packageHeight);
         }else{
             hasTarget = true;
-            powerRotor = 1f;
-            GoToTargetedHeight(10);
-            // AssignObjective(rb_core.position.x, rb_core.position.z);
+            GoToTargetedHeight(goBackUpTo);
+        }
+    }
+
+    public void GoBackAndShutDown(bool landing = false)
+    {
+        Action getBack = new Action(this, ActionType.MOVINGTOLOCATION, xStart, yStart, zStart);
+        Action land = new Action(this, ActionType.GOINGUPDOWN, xStart, yStart, zStart);
+        
+        if(!landing){
+            Debug.Log("GOING : "+xStart+","+zStart);
+            currentAction = getBack;
+        }else{
+            Debug.Log("LANDING :"+yStart);
+            currentAction = land;
+        }
+
+        if(transform.position.y <= yStart+0.1f){
+            ShutDown();
         }
     }
 

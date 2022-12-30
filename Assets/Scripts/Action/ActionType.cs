@@ -5,6 +5,7 @@ namespace Scripts.Action
         MOVINGTOLOCATION,
         GOINGUPDOWN,
         GETTINGAPACKAGE,
-        FREEZINGPOSITION
+        FREEZINGPOSITION,
+        GOBACKANDSHUTDOWN
     }
 }
