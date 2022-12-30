@@ -15,9 +15,10 @@ public class RotorController : MonoBehaviour, IRotor
 
     private Rigidbody rb;
 
-    public void UpdateRotor(Rigidbody rbody, float yTarget)
+    public void UpdateRotor(Rigidbody rbody, float yTarget, bool isCharged)
     {
         rb = rbody;
+        float quotient = isCharged ? 4 : 4;
 
         //Check if target is specified
         SetTarget(yTarget);
@@ -31,8 +32,8 @@ public class RotorController : MonoBehaviour, IRotor
 
         UpdateThrottle();
         Vector3 engineForce = Vector3.zero;
-        engineForce = transform.up * ((rb.mass*Physics.gravity.magnitude + finalDiff ) + (throttle * maxPower))/4;
-    UpdateOrStabilizeY(engineForce);    
+        engineForce = transform.up * ((rb.mass*Physics.gravity.magnitude + finalDiff ) + (throttle * maxPower))/ /*4*/ quotient;
+        UpdateOrStabilizeY(engineForce);    
     }
 
     public void SetTarget(float yTarget)
@@ -61,7 +62,6 @@ public class RotorController : MonoBehaviour, IRotor
             rb.AddForce(engineForce,ForceMode.Force);
         }
         else if(rb.velocity.y < -0.5){
-            print("DOWN : "+engineForce);
             rb.AddForce(engineForce,ForceMode.Force);
         }
         rb.AddForce(engineForce,ForceMode.Force);
