@@ -50,6 +50,10 @@ namespace Scripts.Action
                 case ActionType.GOBACKANDSHUTDOWN:
                     drone.GoBackAndShutDown(landing);
                     break;
+                case ActionType.DROPPINGPACKAGE:
+                    //TODO
+                    drone.GoDownAndDropPackage(yLocation, packageHeight);
+                    break;
                 default:
                     break;
             }
@@ -65,6 +69,11 @@ namespace Scripts.Action
         public bool IsFinished()
         {
             return finished;
+        }
+
+        public float GetPackageHeight()
+        {
+            return packageHeight;
         }
 
         public void UpdateDistances(){
@@ -85,6 +94,7 @@ namespace Scripts.Action
         public void UpdateStatus()
         {
             float margin = 3f;
+            float marginCharged = 1f;
             switch (type)
             {
                 case ActionType.MOVINGTOLOCATION:
@@ -99,7 +109,7 @@ namespace Scripts.Action
                     break;
                 case ActionType.GETTINGAPACKAGE:
                     finished = ( drone.IsCharged() &&
-                        drone.GetDrone().position.y < yLocation+margin && drone.GetDrone().position.y > yLocation
+                        drone.GetDrone().position.y < yLocation+marginCharged && drone.GetDrone().position.y > yLocation-marginCharged
                         && drone.GetDrone().velocity.y < 0.1f && drone.GetDrone().velocity.y > -0.1f);
                     break;
                 case ActionType.GOBACKANDSHUTDOWN:
@@ -109,6 +119,12 @@ namespace Scripts.Action
                         && drone.GetDrone().velocity.z < 0.001f && drone.GetDrone().velocity.z > -0.001f);
 
                     finished = !drone.IsActive();
+                    break;
+                case ActionType.DROPPINGPACKAGE:
+                    finished = ( !drone.IsCharged() &&
+                        drone.GetDrone().position.y < yLocation+marginCharged && drone.GetDrone().position.y > yLocation-marginCharged
+                        && drone.GetDrone().velocity.y < 0.1f && drone.GetDrone().velocity.y > -0.1f);
+                        Debug.Log("OKKKKKKKK : "+finished);
                     break;
                 default:
                     break;

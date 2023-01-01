@@ -56,7 +56,7 @@ public class RotorController : MonoBehaviour, IRotor
 
     public void UpdateOrStabilizeY(Vector3 engineForce)
     {
-        if(rb.velocity.y > 1){
+        if(rb.velocity.y > 0.7){
             /*Vector3*/ engineForce = -rb.velocity;
 
             rb.AddForce(engineForce,ForceMode.Force);

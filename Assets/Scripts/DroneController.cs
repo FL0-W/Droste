@@ -8,7 +8,12 @@ using Scripts.Action;
 public class DroneController : MonoBehaviour
 {
     //Drone components
+    [Header("Core of the drone")]
     public GameObject core;
+    [Header("Availability")]
+    public bool available = true;
+    [Header("Zone attributed")]
+    public string zoneName;
     private List<IRotor> _rotors = new List<IRotor>();
     private List<Action> _actions = new List<Action>();
 
@@ -49,9 +54,10 @@ public class DroneController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        available = true;
         yTarget = -1;
         liftCompleted = false;
-        hasTarget = false;
+        hasTarget = name.Contains("Charged") ? true : false;
         rb_core = core.GetComponent<Rigidbody>();
         rb_drone = GetComponent<Rigidbody>();
         obstacleList = new List<GameObject>();
@@ -70,7 +76,7 @@ public class DroneController : MonoBehaviour
     void Update()
     {
         UpdatePositionDrone();
-        if(!liftCompleted && rb_core.position.y >= 10){
+        if(!liftCompleted && rb_core.position.y >= yTarget){
             liftCompleted = true;
         }
     }
@@ -86,7 +92,7 @@ public class DroneController : MonoBehaviour
         //Action after setup
         if(liftCompleted){
             //Action
-            SimulateActions();
+            PerformActions();
 
             //Use smar area
             AvoidObstacles();
@@ -153,6 +159,7 @@ public class DroneController : MonoBehaviour
         isActive = false;
         _actions.Clear();
         rb_core.velocity = Vector3.zero;
+        available = true;
     }
 
     public void HandleRotors(float yTarget = -1, bool isCharged = false)
@@ -233,6 +240,11 @@ public class DroneController : MonoBehaviour
         return hasTarget;
     }
 
+    public void SetCharge(bool isCharged)
+    {
+        hasTarget = isCharged;
+    }
+
     public void AvoidObstacles()
     {
         if (obstacleList.Count > 0)
@@ -268,24 +280,26 @@ public class DroneController : MonoBehaviour
 
 #region Actions
 
-    private void SimulateActions(){
+    private void PerformActions(){
 
-        if(currentAction == null){
-            Action action1 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, 0);
-            Action action2 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, -10);
-            Action action3 = new Action(this, ActionType.GOINGUPDOWN, 0, 20, 0);
-            Action action4 = new Action(this, ActionType.GOINGUPDOWN, 0, 10, 0);
-            Action action5 = new Action(this, ActionType.GETTINGAPACKAGE, -50, 15, -10, 0.5f);
-            Action action6 = new Action(this, ActionType.GOBACKANDSHUTDOWN, /*should not count :*/ -10000, -100000, -100000);
+        // if(currentAction == null){
+        //     Action action1 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, 0);
+        //     Action action2 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, -10);
+        //     Action action3 = new Action(this, ActionType.GOINGUPDOWN, 0, 20, 0);
+        //     Action action4 = new Action(this, ActionType.GOINGUPDOWN, 0, 10, 0);
+        //     Action action5 = new Action(this, ActionType.GETTINGAPACKAGE, -50, 15, -10, 0.5f);
+        //     Action action6 = new Action(this, ActionType.GOBACKANDSHUTDOWN, /*should not count :*/ -10000, -100000, -100000);
+        //     Action action7 = new Action(this, ActionType.DROPPINGPACKAGE, -50, 15, -10, 0.5f);
 
-            //AddAction(action1);
-            AddAction(action6);
+        //     //AddAction(action1);
+        //     // AddAction(action6);
 
-            // AddAction(action5);
-            // AddAction(action3);
-            // AddAction(action2);
-            // AddAction(action4);
-        }
+        //     AddAction(action5);
+        //     AddAction(action7);
+        //     // AddAction(action3);
+        //     // AddAction(action2);
+        //     // AddAction(action4);
+        // }
 
         if(_actions.Count > 0 && (currentAction == null || currentAction.IsFinished()))
         {
@@ -293,6 +307,7 @@ public class DroneController : MonoBehaviour
 
             if(currentAction == null){
                 Debug.Log("ACTION FINISHED");
+                available = true;
                 GoBackAndShutDown();
             }
         }
@@ -300,6 +315,11 @@ public class DroneController : MonoBehaviour
         if(currentAction != null){
             currentAction.Execute();
         }
+    }
+
+    public Action GetCurrentAction()
+    {
+        return currentAction;
     }
 
     public void AddAction(Action newAction){
@@ -346,16 +366,27 @@ public class DroneController : MonoBehaviour
         }
     }
 
+    public void GoDownAndDropPackage(float goBackUpTo, float packageHeight = 0.5f){
+        Debug.Log("========== GOING DOWN FOR DROP");
+        if(core.GetComponent<CollisionBehavior>().IsCharged()){
+            GoToTargetedHeight(packageHeight);
+        Debug.Log("========== IS STILL CHARGED");
+
+        }else{
+        Debug.Log("========== UP NOW");
+
+            GoToTargetedHeight(goBackUpTo);
+        }
+    }
+
     public void GoBackAndShutDown(bool landing = false)
     {
         Action getBack = new Action(this, ActionType.MOVINGTOLOCATION, xStart, yStart, zStart);
         Action land = new Action(this, ActionType.GOINGUPDOWN, xStart, yStart, zStart);
         
         if(!landing){
-            Debug.Log("GOING : "+xStart+","+zStart);
             currentAction = getBack;
         }else{
-            Debug.Log("LANDING :"+yStart);
             currentAction = land;
         }
 
