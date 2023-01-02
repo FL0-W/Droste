@@ -20,14 +20,14 @@ public class CollisionBehavior : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        print("Collision "+name);
+        Debug.Log("Collision "+name);
         if(CompareTag("Core") && collision.gameObject.CompareTag("Package") &&
         droneFunctions.GetCurrentAction() != null && droneFunctions.GetCurrentAction().GetType() == ActionType.GETTINGAPACKAGE){
             package = collision.gameObject.GetComponent<Rigidbody>();
             /*collision.*/gameObject.AddComponent<FixedJoint>();
             /*collision.*/gameObject.GetComponent<FixedJoint>().connectedBody = package; //GetComponent<Rigidbody>();
             GetComponent<Rigidbody>().mass = initalDroneMass + collision.rigidbody.mass;
-            print("MASSE CORE : "+GetComponent<Rigidbody>().mass+"  ;  MASSE PACKAGE AFTER LIFT : "+collision.rigidbody.mass);
+            Debug.Log("MASSE CORE : "+GetComponent<Rigidbody>().mass+"  ;  MASSE PACKAGE AFTER LIFT : "+collision.rigidbody.mass);
         }
     }
 

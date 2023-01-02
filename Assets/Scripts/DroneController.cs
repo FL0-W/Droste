@@ -70,6 +70,8 @@ public class DroneController : MonoBehaviour
 
         if(debug){
             PowerUp();
+            Action action5 = new Action(this, ActionType.MOVINGTOLOCATION, -50, 10, 0, 0.5f);
+            AddAction(action5);
         }
     }
 
@@ -106,11 +108,11 @@ public class DroneController : MonoBehaviour
     {
         //Smart detection area
         if(other.gameObject.CompareTag("Obstacle")){
-            print("Obstacle detected nearby");
+            Debug.Log("Obstacle detected nearby");
             obstacleList.Add(other.gameObject);
         }
         if(other.gameObject.CompareTag("Drone")){
-            print("Drone detected nearby");
+            Debug.Log("Drone detected nearby");
         }
     }
 
@@ -264,7 +266,7 @@ public class DroneController : MonoBehaviour
                 }
 */
                 float distance = Vector3.Distance(transform.position, collisionPoint);
-                print(distance);
+                //Debug.Log(distance);
                 //FIND PATH
 
 
@@ -272,6 +274,7 @@ public class DroneController : MonoBehaviour
                 float factor = obstacleFactor / ((distance - obstacleSafeDistance + 1) * (distance - obstacleSafeDistance + 1));
                 accelerationSum += Vector3.Normalize(transform.position - collisionPoint) * factor;
             }
+            Debug.Log("===========> "+accelerationSum);
             rb_core.AddForce(accelerationSum);
         }
     }
@@ -281,32 +284,12 @@ public class DroneController : MonoBehaviour
 #region Actions
 
     private void PerformActions(){
-
-        // if(currentAction == null){
-        //     Action action1 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, 0);
-        //     Action action2 = new Action(this, ActionType.MOVINGTOLOCATION, -10, 0, -10);
-        //     Action action3 = new Action(this, ActionType.GOINGUPDOWN, 0, 20, 0);
-        //     Action action4 = new Action(this, ActionType.GOINGUPDOWN, 0, 10, 0);
-        //     Action action5 = new Action(this, ActionType.GETTINGAPACKAGE, -50, 15, -10, 0.5f);
-        //     Action action6 = new Action(this, ActionType.GOBACKANDSHUTDOWN, /*should not count :*/ -10000, -100000, -100000);
-        //     Action action7 = new Action(this, ActionType.DROPPINGPACKAGE, -50, 15, -10, 0.5f);
-
-        //     //AddAction(action1);
-        //     // AddAction(action6);
-
-        //     AddAction(action5);
-        //     AddAction(action7);
-        //     // AddAction(action3);
-        //     // AddAction(action2);
-        //     // AddAction(action4);
-        // }
-
         if(_actions.Count > 0 && (currentAction == null || currentAction.IsFinished()))
         {
             currentAction = _actions.FirstOrDefault(action => action.IsFinished() != true);
 
             if(currentAction == null){
-                Debug.Log("ACTION FINISHED");
+                Debug.Log("ACTIONS FINISHED");
                 available = true;
                 GoBackAndShutDown();
             }
@@ -339,6 +322,8 @@ public class DroneController : MonoBehaviour
     public void GoToTargetedHeight(float target)
     {
         yTarget = target;
+        Vector3 stabilization = new Vector3(0f, rb_core.velocity.y, 0f);
+        rb_core.velocity = stabilization;
     }
 
     public void GoToAndStabilize(float xAxis, float zAxis)
@@ -367,14 +352,9 @@ public class DroneController : MonoBehaviour
     }
 
     public void GoDownAndDropPackage(float goBackUpTo, float packageHeight = 0.5f){
-        Debug.Log("========== GOING DOWN FOR DROP");
         if(core.GetComponent<CollisionBehavior>().IsCharged()){
             GoToTargetedHeight(packageHeight);
-        Debug.Log("========== IS STILL CHARGED");
-
         }else{
-        Debug.Log("========== UP NOW");
-
             GoToTargetedHeight(goBackUpTo);
         }
     }

@@ -68,6 +68,9 @@ namespace Scripts.Action
 
         public bool IsFinished()
         {
+            if(finished){
+                Debug.Log("Drone ["+drone.name+"] has completed the mission ["+type+"]");
+            }
             return finished;
         }
 
@@ -98,10 +101,13 @@ namespace Scripts.Action
             switch (type)
             {
                 case ActionType.MOVINGTOLOCATION:
-                    finished = (Mathf.Round(drone.GetDrone().position.x) == Mathf.Round(xLocation)
-                        && Mathf.Round(drone.GetDrone().position.z) == Mathf.Round(zLocation)
-                        && drone.GetDrone().velocity.x < 0.001f && drone.GetDrone().velocity.x > -0.001f
-                        && drone.GetDrone().velocity.z < 0.001f && drone.GetDrone().velocity.z > -0.001f);
+                //Debug.Log("Dpx: "+Mathf.Round(drone.GetDrone().position.x)+"("+drone.GetDrone().position.x+" / "+drone.GetDrone().transform.position.x+") ; px: "+Mathf.Round(xLocation)+" ; Dpz: "+Mathf.Round(drone.GetDrone().position.z)+"("+drone.GetDrone().position.z+" / "+drone.GetDrone().transform.position.z+") ; pz: "+Mathf.Round(zLocation));
+                    finished = (drone.GetDrone().position.x < xLocation+0.3 && drone.GetDrone().position.x > xLocation-0.3
+                        && drone.GetDrone().position.z < zLocation+0.3 && drone.GetDrone().position.z > zLocation-0.3
+                    // (Mathf.Round(drone.GetDrone().position.x) == Mathf.Round(xLocation)
+                    //     && Mathf.Round(drone.GetDrone().position.z) == Mathf.Round(zLocation)
+                        && drone.GetDrone().velocity.x < 0.0001f && drone.GetDrone().velocity.x > -0.0001f
+                        && drone.GetDrone().velocity.z < 0.0001f && drone.GetDrone().velocity.z > -0.0001f);
                     break;
                 case ActionType.GOINGUPDOWN:
                     finished = (drone.GetDrone().position.y < yLocation+margin && drone.GetDrone().position.y > yLocation
@@ -124,15 +130,9 @@ namespace Scripts.Action
                     finished = ( !drone.IsCharged() &&
                         drone.GetDrone().position.y < yLocation+marginCharged && drone.GetDrone().position.y > yLocation-marginCharged
                         && drone.GetDrone().velocity.y < 0.1f && drone.GetDrone().velocity.y > -0.1f);
-                        Debug.Log("OKKKKKKKK : "+finished);
                     break;
                 default:
                     break;
-            }
-
-            if(finished){
-                // print("OK");
-                // Debug.Log("ACTION : "+type+" ON x="+xLocation+" ; y="+yLocation+" ; z="+zLocation+" FINISHED");
             }
         }
 

@@ -18,12 +18,6 @@ public class UnitControler : MonoBehaviour
     {
         droneList = GameObject.FindGameObjectsWithTag("Drone").ToList();
         packageList = GameObject.FindGameObjectsWithTag("Package").ToList();
-
-        //Setting the flight area
-        foreach (GameObject drone in droneList)
-        {
-            drone.GetComponent<DroneController>().GoToTargetedHeight(heightToFly);
-        }
     }
 
     // Update is called once per frame
@@ -45,19 +39,21 @@ public class UnitControler : MonoBehaviour
                             drone.GetComponent<DroneController>().zoneName == package.GetComponent<PackageController>().zoneName);
             if(drone){
                 //Locking the objects
-                drone.GetComponent<DroneController>().available = false;
-                package.GetComponent<PackageController>().processing = true;
-                float pX = package.GetComponent<Rigidbody>().transform.position.x;
-                float pY = package.GetComponent<Rigidbody>().transform.position.y;
-                float pZ = package.GetComponent<Rigidbody>().transform.position.z;
+                float pX = package.GetComponent<Rigidbody>()./*transform.*/position.x;
+                float pY = package.GetComponent<Rigidbody>()./*transform.*/position.y;
+                float pZ = package.GetComponent<Rigidbody>()./*transform.*/position.z;
                 float pH = package.GetComponent<PackageController>().height;
                 float pXTarget = package.GetComponent<PackageController>().xTarget;
                 float pYTarget = package.GetComponent<PackageController>().yTarget;
                 float pZTarget = package.GetComponent<PackageController>().zTarget;
                 //Powering up the drone if inactive
-                if(drone.GetComponent<DroneController>().IsActive()){
+                if(!drone.GetComponent<DroneController>().IsActive()){
                     drone.GetComponent<DroneController>().PowerUp();
                 }
+                //Overriding default height
+                Action goToHeight = new Action(drone.GetComponent<DroneController>(), 
+                                ActionType.GOINGUPDOWN, pX, heightToFly, pZ, pH);
+                drone.GetComponent<DroneController>().AddAction(goToHeight);
                 //Going on package location
                 Action goToPackage = new Action(drone.GetComponent<DroneController>(), 
                                 ActionType.MOVINGTOLOCATION, pX, heightToFly, pZ, pH);
@@ -74,6 +70,10 @@ public class UnitControler : MonoBehaviour
                 Action droppingPackage = new Action(drone.GetComponent<DroneController>(), 
                                 ActionType.DROPPINGPACKAGE, pXTarget, heightToFly, pZTarget, pH);
                 drone.GetComponent<DroneController>().AddAction(droppingPackage);
+
+                //Locking the objects
+                drone.GetComponent<DroneController>().available = false;
+                package.GetComponent<PackageController>().processing = true;
             }
         }
     }
