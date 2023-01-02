@@ -14,6 +14,7 @@ public class UnitControler : MonoBehaviour
     
     [Header("Monitoring")]
     public TextMeshProUGUI droneCount;
+    public TextMeshProUGUI droneName;
 
     [Header("Instruction")]
     public float heightToFly = 10;
@@ -64,6 +65,7 @@ public class UnitControler : MonoBehaviour
                                     droneList[cameraOnDrone].transform.position.z - 10);
 
         camera.transform.position = position;
+        droneName.text = "View on : "+droneList[cameraOnDrone].name;
     }
     
     public void SetCountText()
@@ -85,6 +87,11 @@ public class UnitControler : MonoBehaviour
                             drone.GetComponent<DroneController>().available == true &&
                             drone.GetComponent<DroneController>().zoneName == package.GetComponent<PackageController>().zoneName);
             if(drone){
+                //Locking the objects
+                if(!package.GetComponent<PackageController>().processing){
+                    drone.GetComponent<DroneController>().available = false;
+                    package.GetComponent<PackageController>().processing = true;
+                }
                 //Locking the objects
                 float pX = package.GetComponent<Rigidbody>()./*transform.*/position.x;
                 float pY = package.GetComponent<Rigidbody>()./*transform.*/position.y;
@@ -117,10 +124,6 @@ public class UnitControler : MonoBehaviour
                 Action droppingPackage = new Action(drone.GetComponent<DroneController>(), 
                                 ActionType.DROPPINGPACKAGE, pXTarget, heightToFly, pZTarget, pH);
                 drone.GetComponent<DroneController>().AddAction(droppingPackage);
-
-                //Locking the objects
-                drone.GetComponent<DroneController>().available = false;
-                package.GetComponent<PackageController>().processing = true;
             }
         }
     }
