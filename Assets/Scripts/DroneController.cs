@@ -65,13 +65,17 @@ public class DroneController : MonoBehaviour
         xStart = rb_core.transform.position.x;
         yStart = rb_core.transform.position.y;
         zStart = rb_core.transform.position.z;
-        obstacleFactor = 10;
-        obstacleSafeDistance = 10;
+        obstacleFactor = 100;
+        obstacleSafeDistance = 5;
 
         if(debug){
             PowerUp();
-            Action action5 = new Action(this, ActionType.MOVINGTOLOCATION, -50, 10, 0, 0.5f);
+            Action action5 = new Action(this, ActionType.GETTINGAPACKAGE, -68, 10, -365, 0.5f);
+            Action action6 = new Action(this, ActionType.MOVINGTOLOCATION, -51, 10, -365, 0.5f);
+            Action action7 = new Action(this, ActionType.DROPPINGPACKAGE, -68, 10, -365, 0.7f);
             AddAction(action5);
+            AddAction(action6);
+            AddAction(action7);
         }
     }
 
@@ -274,7 +278,6 @@ public class DroneController : MonoBehaviour
                 float factor = obstacleFactor / ((distance - obstacleSafeDistance + 1) * (distance - obstacleSafeDistance + 1));
                 accelerationSum += Vector3.Normalize(transform.position - collisionPoint) * factor;
             }
-            Debug.Log("===========> "+accelerationSum);
             rb_core.AddForce(accelerationSum);
         }
     }
@@ -322,6 +325,8 @@ public class DroneController : MonoBehaviour
     public void GoToTargetedHeight(float target)
     {
         yTarget = target;
+        rb_core.transform.rotation = Quaternion.identity;
+        rb_core.angularVelocity = Vector3.zero;
         Vector3 stabilization = new Vector3(0f, rb_core.velocity.y, 0f);
         rb_core.velocity = stabilization;
     }

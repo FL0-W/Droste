@@ -51,7 +51,6 @@ namespace Scripts.Action
                     drone.GoBackAndShutDown(landing);
                     break;
                 case ActionType.DROPPINGPACKAGE:
-                    //TODO
                     drone.GoDownAndDropPackage(yLocation, packageHeight);
                     break;
                 default:
@@ -76,7 +75,8 @@ namespace Scripts.Action
 
         public float GetPackageHeight()
         {
-            return packageHeight;
+            float marginPlateform = 1f;
+            return packageHeight + marginPlateform;
         }
 
         public void UpdateDistances(){
@@ -102,8 +102,8 @@ namespace Scripts.Action
             {
                 case ActionType.MOVINGTOLOCATION:
                 //Debug.Log("Dpx: "+Mathf.Round(drone.GetDrone().position.x)+"("+drone.GetDrone().position.x+" / "+drone.GetDrone().transform.position.x+") ; px: "+Mathf.Round(xLocation)+" ; Dpz: "+Mathf.Round(drone.GetDrone().position.z)+"("+drone.GetDrone().position.z+" / "+drone.GetDrone().transform.position.z+") ; pz: "+Mathf.Round(zLocation));
-                    finished = (drone.GetDrone().position.x < xLocation+0.3 && drone.GetDrone().position.x > xLocation-0.3
-                        && drone.GetDrone().position.z < zLocation+0.3 && drone.GetDrone().position.z > zLocation-0.3
+                    finished = (drone.GetDrone().position.x < xLocation+1 && drone.GetDrone().position.x > xLocation-1
+                        && drone.GetDrone().position.z < zLocation+1 && drone.GetDrone().position.z > zLocation-1
                     // (Mathf.Round(drone.GetDrone().position.x) == Mathf.Round(xLocation)
                     //     && Mathf.Round(drone.GetDrone().position.z) == Mathf.Round(zLocation)
                         && drone.GetDrone().velocity.x < 0.0001f && drone.GetDrone().velocity.x > -0.0001f

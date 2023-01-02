@@ -53,6 +53,8 @@ public class CollisionBehavior : MonoBehaviour
                 package.mass = initalPackageMass;
                 initalPackageMass = 0;
                 GetComponent<Rigidbody>().mass = initalDroneMass - package.mass;
+                transform.rotation = Quaternion.identity;
+                GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
                 Destroy(gameObject.GetComponent<FixedJoint>());
                 droneFunctions.SetCharge(false);
                 package = null;

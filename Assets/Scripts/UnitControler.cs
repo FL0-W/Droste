@@ -3,11 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Scripts.Action;
+using TMPro;
 
 public class UnitControler : MonoBehaviour
 {
 
+    [Header("Drone camera")]
+    public Camera camera;
+    private int cameraOnDrone = 0;
+    
     [Header("Monitoring")]
+    public TextMeshProUGUI droneCount;
+
+    [Header("Instruction")]
     public float heightToFly = 10;
     public bool activate = false;
     private List<GameObject> droneList;
@@ -18,6 +26,9 @@ public class UnitControler : MonoBehaviour
     {
         droneList = GameObject.FindGameObjectsWithTag("Drone").ToList();
         packageList = GameObject.FindGameObjectsWithTag("Package").ToList();
+
+        SetCountText();
+        UpdateCamera();
     }
 
     // Update is called once per frame
@@ -29,6 +40,42 @@ public class UnitControler : MonoBehaviour
                 AssignDroneToPackage(package);
             }
         }
+        SetCountText();
+        UpdateCamera();
+    }
+
+    void UpdateCamera()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftArrow)){
+            cameraOnDrone--;
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow)){
+            cameraOnDrone++;
+        }
+
+        if(cameraOnDrone >= droneList.Count){
+            cameraOnDrone = 0;
+        }else if(cameraOnDrone < 0){
+            cameraOnDrone = droneList.Count -1;
+        }
+
+        Vector3 position = new Vector3(droneList[cameraOnDrone].transform.position.x,
+                                    droneList[cameraOnDrone].transform.position.y,
+                                    droneList[cameraOnDrone].transform.position.z - 10);
+
+        camera.transform.position = position;
+    }
+    
+    public void SetCountText()
+    {
+        float count = 0f;
+        foreach (GameObject drone in droneList)
+        {
+            if(drone.GetComponent<DroneController>().IsActive()){
+                count++;
+            }
+        }
+        droneCount.text = "Drones in service : "+count+"/"+droneList.Count;
     }
 
     public void AssignDroneToPackage(GameObject package)
