@@ -65,6 +65,11 @@ namespace Scripts.Action
             return type;
         }
 
+        public void AbortAction()
+        {
+            finished = true;
+        }
+
         public bool IsFinished()
         {
             if(finished){
@@ -101,11 +106,8 @@ namespace Scripts.Action
             switch (type)
             {
                 case ActionType.MOVINGTOLOCATION:
-                //Debug.Log("Dpx: "+Mathf.Round(drone.GetDrone().position.x)+"("+drone.GetDrone().position.x+" / "+drone.GetDrone().transform.position.x+") ; px: "+Mathf.Round(xLocation)+" ; Dpz: "+Mathf.Round(drone.GetDrone().position.z)+"("+drone.GetDrone().position.z+" / "+drone.GetDrone().transform.position.z+") ; pz: "+Mathf.Round(zLocation));
                     finished = (drone.GetDrone().position.x < xLocation+1 && drone.GetDrone().position.x > xLocation-1
                         && drone.GetDrone().position.z < zLocation+1 && drone.GetDrone().position.z > zLocation-1
-                    // (Mathf.Round(drone.GetDrone().position.x) == Mathf.Round(xLocation)
-                    //     && Mathf.Round(drone.GetDrone().position.z) == Mathf.Round(zLocation)
                         && drone.GetDrone().velocity.x < 0.0001f && drone.GetDrone().velocity.x > -0.0001f
                         && drone.GetDrone().velocity.z < 0.0001f && drone.GetDrone().velocity.z > -0.0001f);
                     break;

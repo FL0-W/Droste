@@ -70,12 +70,8 @@ public class DroneController : MonoBehaviour
 
         if(debug){
             PowerUp();
-            Action action5 = new Action(this, ActionType.GETTINGAPACKAGE, -68, 10, -365, 0.5f);
-            Action action6 = new Action(this, ActionType.MOVINGTOLOCATION, -51, 10, -365, 0.5f);
-            Action action7 = new Action(this, ActionType.DROPPINGPACKAGE, -68, 10, -365, 0.7f);
+            Action action5 = new Action(this, ActionType.GOINGUPDOWN, xStart, 15, zStart, 0.5f);
             AddAction(action5);
-            AddAction(action6);
-            AddAction(action7);
         }
     }
 
@@ -260,18 +256,7 @@ public class DroneController : MonoBehaviour
             {
                 Vector3 collisionPoint = obstacle.GetComponent<Collider>().ClosestPointOnBounds(transform.position);
 
-/*
-                float goingAbove = obstacle.GetComponent<Collider>().bounds.size.y / 2;
-                
-                if(collisionPoint.y > goingAbove // and goingAbove shorter than the other directions//){
-                    //Pause and go upwards
-                }else if(/*direction vers la droite et veux monter sur y// transform.position){
-
-                }
-*/
                 float distance = Vector3.Distance(transform.position, collisionPoint);
-                //Debug.Log(distance);
-                //FIND PATH
 
 
 
@@ -293,8 +278,8 @@ public class DroneController : MonoBehaviour
 
             if(currentAction == null){
                 Debug.Log("ACTIONS FINISHED");
+                AddAction(new Action(this, ActionType.GOBACKANDSHUTDOWN, xStart, yStart, zStart, 0.5f));
                 available = true;
-                GoBackAndShutDown();
             }
         }
 
@@ -310,6 +295,12 @@ public class DroneController : MonoBehaviour
 
     public void AddAction(Action newAction){
         _actions.Add(newAction);
+    }
+
+    public void CancelShutDown()
+    {
+        Action shutDown = _actions.FirstOrDefault(action => action.GetType() == ActionType.GOBACKANDSHUTDOWN && action.IsFinished() != true);
+        shutDown.AbortAction();
     }
 
     public void SetDistanceX(float xDistance){

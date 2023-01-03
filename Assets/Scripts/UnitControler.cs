@@ -91,11 +91,15 @@ public class UnitControler : MonoBehaviour
                 if(!package.GetComponent<PackageController>().processing){
                     drone.GetComponent<DroneController>().available = false;
                     package.GetComponent<PackageController>().processing = true;
+                    //If going back to power off, cancel action
+                    if(drone.GetComponent<DroneController>().GetCurrentAction() != null){
+                        drone.GetComponent<DroneController>().CancelShutDown();
+                    }
                 }
                 //Locking the objects
-                float pX = package.GetComponent<Rigidbody>()./*transform.*/position.x;
-                float pY = package.GetComponent<Rigidbody>()./*transform.*/position.y;
-                float pZ = package.GetComponent<Rigidbody>()./*transform.*/position.z;
+                float pX = package.GetComponent<Rigidbody>().position.x;
+                float pY = package.GetComponent<Rigidbody>().position.y;
+                float pZ = package.GetComponent<Rigidbody>().position.z;
                 float pH = package.GetComponent<PackageController>().height;
                 float pXTarget = package.GetComponent<PackageController>().xTarget;
                 float pYTarget = package.GetComponent<PackageController>().yTarget;
