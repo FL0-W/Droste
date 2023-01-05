@@ -70,8 +70,8 @@ public class DroneController : MonoBehaviour
 
         if(debug){
             PowerUp();
-            Action action5 = new Action(this, ActionType.GOINGUPDOWN, xStart, 15, zStart, 0.5f);
-            AddAction(action5);
+            // Action action5 = new Action(this, ActionType.GOINGUPDOWN, xStart, 30, zStart, 0.5f);
+            // AddAction(action5);
         }
     }
 

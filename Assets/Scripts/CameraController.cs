@@ -26,6 +26,10 @@ public class CameraController : MonoBehaviour
 
             transform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
         }
+        if(Input.GetKeyDown("e")){
+            Debug.Log("SCREENSHOT TAKEN IN "+Application.persistentDataPath);
+            ScreenCapture.CaptureScreenshot("SomeLevel.png");
+        }
     }
 
     private void SetCamera()
