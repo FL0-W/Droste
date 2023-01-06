@@ -18,7 +18,7 @@ Les spécifications suivantes sont issues du cahier des charges et sont triées 
 - L'unité de contrôle peut attribuer un drone à une zone particulière.
 	> **Note**: nécessite que le colis sois répertorié comme faisant partie de la zone en question
 	
-![Image zone](img/zone.PNG?raw=true)
+![Image zone](img/zone.png?raw=true)
 
 #### A améliorer
 - Gestion de la communication et des risques de collisions entre drones
@@ -66,6 +66,7 @@ Globalement, via l'interface Unity, l'utilisateur peut changer manuellement :
 > **Note** : la liste des colis se trouve dans "Packages" 
 - La destination du colis du colis (propriétés "*X Target*", "*Y Target*", "*Z Target*")
 - La zone attribuée à ce colis via "*Zone Name*"
+
 ![Image colis](img/colis.PNG?raw=true)
 
 ##### Drone
